@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
+    <title>Configuración</title>
+    <!-- CSS  -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="../css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+    <link href="../css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  </head>
+
+  <body class"green">
+    <div class="container">
+      <div class="row center">
+        <h4></h4>
+          <form action="#">
+            <div class="row">
+                <div>
+                <h5>Puerto para UDP:</h5>
+                </div>
+                <div class="col s4 offset-s4">
+                  <input placeholder="10200" value="10200" id="udp" type="text" class="validate">   
+                </div>    
+            </div>
+              <div class="row">
+                <div>
+                <h5>Puerto para TCP:</h5>
+                </div>
+                <div class="col s4 offset-s4">
+                  <input placeholder="20060" value="20060" id="tcp" type="text" class="validate">   
+                </div>    
+            </div>
+            <div class="row">
+                <div>
+                <h5>IP de Multicast:</h5>
+                </div>
+                <div class="col s4 offset-s4">
+                  <input placeholder="ff02::1234" value="ff02::1234" id="ipmulticast" type="text" class="validate">   
+                </div>    
+            </div>
+            <div class="row">
+                <div>
+                <h5>Puerto para Multicast:</h5>
+                </div>
+                <div class="col s4 offset-s4">
+                  <input placeholder="5000" value="5000" id="portmulticast" type="text" class="validate">   
+                </div>    
+            </div>
+            <div class="row">
+              <button id="submit" class="btn waves-effect waves-light red" type="submit" name="action">Guardar
+              <i class="material-icons right">send</i>
+              </button>
+            </div>  
+          </form>    
+      </div>
+    </div>
+  </div>
+  </body>
+
+  <!--  Scripts-->
+  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src="../js/vendor/materialize.js"></script>
+  <script src="../js/network.js"></script>
+  <script src="../js/configurar.js"></script>
+
+  
+</html>

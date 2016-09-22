@@ -1,0 +1,113 @@
+/* Custom Stylesheet */
+/**
+ * Use this file to override Materialize files so you can update
+ * the core Materialize files in the future
+ *
+ * Made By MaterializeCSS.com
+ */
+.icon-block {
+  padding: 0;
+}
+.icon-block .material-icons {
+	font-size: inherit;
+}
+.marg{
+	color: #fff;
+	margin-top: 10px;
+}
+.img_juego{
+	background: transparent url("../images/table1.png");
+	width: 1000px;
+	height: 550px;
+	border-radius: 5px;
+	margin-bottom: 20px;
+}
+.cardd{
+    background: white;
+    color: red;
+	left: 100px;
+    width:55px;
+    height:93px;
+    border:2px solid black;
+    float:left;
+    margin-left: -20px;
+  	border: 6px solid #FFF;
+  	border-radius: 5px;
+  	box-shadow: 0 0 1px #000;
+    font-family:courier;
+}
+.cardp{
+    background: white;
+    left: 100px;
+    width:55px;
+    height:93px;
+    border:2px solid black;
+    float:left;
+    margin-left: -20px;
+    border: 6px solid #FFF;
+  	border-radius: 5px;
+  	box-shadow: 0 0 1px #000;
+    font-family:courier;
+}
+.cardt{
+    background: white;
+    left: 100px;
+    width:55px;
+    height:93px;
+    border:2px solid black;
+    float:left;
+    margin-left: -20px;
+    border: 6px solid #FFF;
+  	border-radius: 5px;
+  	box-shadow: 0 0 1px #000;
+    font-family:courier;
+}
+.cardc{
+    background: white;
+    color: red;
+    left: 100px;
+    width:55px;
+    height:93px;
+    border:2px solid black;
+    float:left;
+    margin-left: -20px;
+    border: 6px solid #FFF;
+  	border-radius: 5px;
+  	box-shadow: 0 0 1px #000;
+    font-family:courier;
+}
+.servidor{
+    position: relative;
+    width:200px;
+    height:96px;
+    left: 400px;
+    top: 100px;
+}
+.jug1{
+    position: relative;
+    width:200px;
+    height:96px;
+    left: 40px;
+    top: 190px;
+}
+.jug2{
+    position: relative;
+    width:200px;
+    height:96px;
+    left: 280px;
+    top: 165px;
+}
+.jug3{
+    position: relative;
+    width:200px;
+    height:96px;
+    left: 520px;
+    top: 70px;
+}
+.jug4{
+    position: relative;
+    width:200px;
+    height:96px;
+    left: 750px;
+    top: -95px;
+}

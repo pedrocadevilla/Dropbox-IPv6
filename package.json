@@ -1,0 +1,21 @@
+{
+  "name": "Twentyone",
+  "single-instance": false,
+  "main": "/html/index.html",
+  "window": {
+    "width": 1100,
+    "height": 700,
+    "toolbar": true
+  },
+  "dependencies": {
+    "ip": "^1.1.2",
+    "material-design-icons": "^2.2.3",
+    "my-ip": "^1.1.1",
+    "jquery": "^2.2.2",
+    "fsmonitor": "^0.2.4"
+  },
+  "version": "0.0.1",
+  "description": "BlackJack",
+  "repository": {},
+  "author": "BlackJack"
+}

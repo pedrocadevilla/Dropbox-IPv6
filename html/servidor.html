@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
+    <title>Servidor</title>
+    <!-- CSS  -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="../css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+    <link href="../css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  </head>
+
+  <body>
+  
+    
+      <!---OCULTO -->
+     <div class="container img_juego hide" id="imagen_oculta">
+      <div class="servidor" id="5">
+
+      </div>
+      <div class="jug1" id="1">
+
+      </div>
+      <div class="jug2" id="2">
+
+      </div>
+      <div class="jug3" id="3">
+
+      </div>
+      <div class="jug4" id="4">
+
+      </div>
+    </div>
+    <div class="row center hide" id="btn_oculta">
+      <button id="comenzar" class="btn waves-effect waves-light red" type="submit" name="action">Iniciar Ronda
+      </button>
+    </div>
+    <!-- OCULTO-->
+    <div class="container" id="ocultar">
+      <div class="row center">
+          <form >
+            <div class="row">
+              <h4>Nombre de la sala</h4>  
+            </div>
+            <div class="row">
+              <button id="crearSala" class="btn waves-effect waves-light red" type="submit" name="action">Iniciar Juego
+              <i class="material-icons right">send</i>
+              </button>
+            </div>  
+          </form>    
+      </div>
+    </div>
+
+    <div class="container" id="ocultar2">
+      <div class="row" style="border-bottom: 2px solid rgba(0,0,0,0.2);">
+        <div class="col s5">
+          <h5>IP</h5>
+        </div>
+        <div class="col">
+          <h5>Nombre</h5>
+        </div>                   
+      </div>
+
+      <div class="row" id="players">
+
+      </div>
+    </div>
+      
+    <script type="text/template" id="players-template">
+      <div class="row">
+        <div class="col s5">
+          <h5><%= ip %></h5>
+        </div>
+        <div class="col">
+          <h5><%= playerName %></h5>
+        </div>
+      </div>
+    </script>
+
+
+  </body>
+  <!--  Scripts-->
+  <script src="../js/vendor/jquery-2.1.1.min.js"></script>
+  <script src="../js/vendor/underscore.min.js"></script>
+  <script src="../js/vendor/materialize.js"></script>
+  <script src="../js/network.js"></script>
+  <script src="../js/servidor.js"></script>
+
+</html>
