@@ -2,6 +2,7 @@ var ipbroadcast = global.infoGame.ipbroadcast;
 var ipmulticast = global.infoGame.ipmulticast;
 var udp = global.infoGame.udp;
 var myIP = require('my-ip');
+var band=false;
 var network = {
     net : require('net'),
     dgram: require('dgram'),

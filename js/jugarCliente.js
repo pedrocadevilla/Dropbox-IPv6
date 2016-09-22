@@ -20,28 +20,29 @@ var dir = './shareClient';
 var buffernew;
 var buff;
 require('buffer').Buffer;
-
-
+var band=false;
+var mandar = true;
+global.infoGame.fileName='';
+var cod_f;
 if (!fs.existsSync(dir)){
     fs.mkdirSync(dir);
 }
 //*************************Eventos de Archivos y Carpetas*********************************
 fsmonitor.watch('./shareClient', null, function(change) {
    
-    //console.log("Change detected:\n" + change);
-    var band;  
-    if(change.addedFiles[0]!=null){
+    //console.log("Change detected:\n" + change);  
+    if(change.addedFiles[0]!=null && mandar==true){
         console.log("Added files:    ", change.addedFiles);
         str=change.addedFiles[0];
-        band=4;
-        sendFile(str,band);
+        cod_f = 4;
+        sendFile(str,cod_f);
 
     }
     if(change.modifiedFiles[0]!=null){
-    console.log("Modified files: ", change.modifiedFiles);
-    str=change.modifiedFiles[0];
-        band=5;
-        sendFile(str,band);
+        console.log("Modified files: ", change.modifiedFiles);
+        str=change.modifiedFiles[0];
+        cod_f=5;
+        sendFile(str,cod_f);
     }
     if(change.removedFiles[0]!=null){
         console.log("Removed files:  ", change.removedFiles);
@@ -68,6 +69,7 @@ var monitor = fsmonitor.watch('.', {
     }
 });
 function sendFile(str, cod_file){
+         var str;
         var file;
         var stats;
         var myVar;
@@ -196,10 +198,10 @@ function handleData(data){
             comienzoDeRonda(data);
             break;
         case 6:
-            recibirArchivoMulticast(data);
+            recibirArchivo(data);
         break;
         case 7:
-            recibirArchivo(data);
+            //recibirArchivo(data);
             break;
         case 9:
             recibirCarta(data);
@@ -213,6 +215,18 @@ function handleData(data){
             break;
     }
 }
+    function recibirArchivo(data){
+        global.infoGame.fileName=data.nombre;
+    }
+    function recibirArchivoMulticast(data){
+        var file = data.file;
+        console.log('tamaño:'+file.length);
+        console.log('Se recibió archivo del servidor.')
+        mandar=false;
+        fs.writeFile('./shareClient/'+global.infoGame.fileName,file);
+        mandar=true;
+        console.log('Se añadió el archivo.')
+    }
 function aceptarSolicitud(data){
     if( data.aceptado === true){
         console.log(data);
@@ -304,22 +318,7 @@ function comienzoDeRonda(data){
     puntaje = data.puntaje;
     //console.log(puntaje);
 }
-function recibirArchivo(data){
-    var file;
-    if(suma < 18){
-        var data = {
-        'codigo': 8,
-        'jugar': 'true'
-        };
-    }else{
-        var data = {
-        'codigo': 8,
-        'jugar': false
-        };
-    }
-    console.log(data);
-    clientTCP.write(JSON.stringify(data)); 
-}
+
 function finalizarPartida(data){
     var ronda = data.rondas;
     var cartas_jugadas = data.cartas_jugadas;
@@ -356,8 +355,19 @@ function hearMulticast(multicastPort){
         console.log('listening on :' + global.infoGame.ipmulticast);
     });
     socket.on('message',function(message,rinfo){
-       var data = parseJSON(message);
-       console.log("Multicast:"+data)
-       handleData(data);
+       if(band==false){
+        var data = parseJSON(message);
+        console.log("Multicast:"+data)
+        handleData(data);
+            if(data.codigo == 6){
+                band=true
+            }
+       }else{
+        const copy = JSON.parse(message, function(key, value)  {
+                return value && value.type === 'Buffer' ? new Buffer(value.data) : value;
+                });
+        recibirArchivoMulticast(copy);
+        band=false;
+       }
     });
 }

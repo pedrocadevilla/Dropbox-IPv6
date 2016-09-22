@@ -166,9 +166,8 @@ announceRoom(global.infoGame.roomNames,global.infoGame.tiempo,cantidad_jug,globa
             case 4:
                 fileComes(data,sock);
                 break;
-                case 5:
-
-                 fileComes(data,sock);
+            case 5:
+                fileComes(data,sock);
                 break;
             case 8:
                 envioDeCarta(data,sock);
@@ -248,6 +247,7 @@ announceRoom(global.infoGame.roomNames,global.infoGame.tiempo,cantidad_jug,globa
                 'file': buffer
                 };
                 sendMulticast(dataFile);
+                console.log('Servidor reenvío.')
             }
             time();
    }
