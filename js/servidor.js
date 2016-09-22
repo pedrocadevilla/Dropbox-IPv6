@@ -116,7 +116,7 @@ announceRoom(global.infoGame.roomNames,global.infoGame.tiempo,cantidad_jug,globa
                 console.log(data.toString());
                 var message = parseJSON(data);
                 handleData(message,client);
-                if(message.codigo==4){
+                if(message.codigo==4 || message.codigo==5){
                     console.log(band);
                     band=true;
                 }
@@ -165,6 +165,10 @@ announceRoom(global.infoGame.roomNames,global.infoGame.tiempo,cantidad_jug,globa
                 break;
             case 4:
                 fileComes(data,sock);
+                break;
+                case 5:
+
+                 fileComes(data,sock);
                 break;
             case 8:
                 envioDeCarta(data,sock);

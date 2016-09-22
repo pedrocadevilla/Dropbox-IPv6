@@ -28,15 +28,20 @@ if (!fs.existsSync(dir)){
 //*************************Eventos de Archivos y Carpetas*********************************
 fsmonitor.watch('./shareClient', null, function(change) {
    
-    //console.log("Change detected:\n" + change);  
+    //console.log("Change detected:\n" + change);
+    var band;  
     if(change.addedFiles[0]!=null){
         console.log("Added files:    ", change.addedFiles);
         str=change.addedFiles[0];
-        sendFile(str);
+        band=4;
+        sendFile(str,band);
 
     }
     if(change.modifiedFiles[0]!=null){
     console.log("Modified files: ", change.modifiedFiles);
+    str=change.modifiedFiles[0];
+        band=5;
+        sendFile(str,band);
     }
     if(change.removedFiles[0]!=null){
         console.log("Removed files:  ", change.removedFiles);
@@ -62,8 +67,7 @@ var monitor = fsmonitor.watch('.', {
         return relpath.match(/^\.git$/i) !== null;
     }
 });
-function sendFile(str){
-         var str;
+function sendFile(str, cod_file){
         var file;
         var stats;
         var myVar;
@@ -76,7 +80,7 @@ function sendFile(str){
             fs.writeFile('./tmp/'+str,buffernew);
 
             var data = {
-            'codigo': 4,
+            'codigo': cod_file,
             'nombre':str
             };
             clientTCP.write(JSON.stringify(data));
