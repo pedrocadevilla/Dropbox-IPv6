@@ -5,11 +5,8 @@ var roomName = global.infoGame.roomName;
 var portmulticast = global.infoGame.portmulticast;
 var idcliente = 0;
 var jugadores = new Array(new Object);
-var share = new Array(new Object);
-var puntaje = new Array(new Object);
-var suma = new Array(new Object);
-var ganadores = new Array(new Object);
 var ipclientes = new Array(new Object);
+var ipclients = new Array(new Object);
 var myIP = network.getMyIp();
 var users = [];
 var cant = global.infoGame.espacios;
@@ -20,18 +17,16 @@ var template = _.template($('#players-template').html());
 var ipcliente;
 var cantidad_jug = global.infoGame.espacios;
 var pos;
-var band=0, band1=0,band2=0,band3=0;
+var posi=0;
 var jugadoresEnSala;
-var turno = 0;
 var clientTCP;
-var cartasRestantes;
-var rondas=0;
 var band=false;
 global.infoGame.Filename='';
+ global.infoGame.size=0;
 var fs = require('fs');
 fsmonitor = require('fsmonitor');
 var dir = './share';
-
+var buff = new Buffer(0, 'hex');
 if (!fs.existsSync(dir)){
     fs.mkdirSync(dir);
 }
@@ -42,15 +37,14 @@ fsmonitor.watch('./share', null, function(change) {
     var file;
     //console.log("Change detected:\n" + change);  
     if(change.addedFiles[0]!=null){
-        console.log("Added files:    ", change.addedFiles);
-        str=change.addedFiles;
+        console.log("Added files:    ", change.addedFiles[0]);
+        str=change.addedFiles[0];
         console.log(str);
-        file = fs.readFileSync(dir+'/'+change.addedFiles).toString();
+        file = fs.readFileSync(dir+'/'+change.addedFiles[0]).toString();
         var data = {
             'codigo': 7,
             'file': file
         };
-       // sendMulticast(data); 
     }
     if(change.modifiedFiles[0]!=null){
     console.log("Modified files: ", change.modifiedFiles);
@@ -96,8 +90,8 @@ announceRoom(global.infoGame.roomNames,global.infoGame.tiempo,cantidad_jug,globa
         }else{
             global.infoGame.tiempo = 120;
         }
-                sendMulticast(message);
-                //network.serverUDP(message,port);
+                sendMulticast(message,false);
+               //network.serverUDP(message,20050);
         }, 1000);
         var data = {
             type: 'alert-success',
@@ -107,26 +101,25 @@ announceRoom(global.infoGame.roomNames,global.infoGame.tiempo,cantidad_jug,globa
     }
 
 (function startServer(){
-     
     var server = network.net.createServer(function(client){
         console.log('client connected');
+        //Verificar si el que se conecto ya no esta agregado en el vector.
+        ipclientes[pos] ={id: idcliente, ip: ipcliente}; 
+        ipclients[posi]={ip:client.remoteAddress};
+        posi = posi + 1;
         clientTCP = client;
         client.on('data',function(data){
             if(band==false){
-                console.log(data.toString());
                 var message = parseJSON(data);
                 handleData(message,client);
-                if(message.codigo==4 || message.codigo==5){
-                    console.log(band);
-                    band=true;
-                }
             }else{
-                const copy = JSON.parse(data, function(key, value)  {
-                return value && value.type === 'Buffer' ? new Buffer(value.data) : value;
-                });
-                console.log(copy.toString());
-                ReceiveFile(copy,client);
-                band=false;
+                console.log('Recibió archivo del cliente');
+                logDataStream(data); // Acumular Buffer
+                buff = Buffer.concat([buff, new Buffer(data, 'hex')]); // Concatenar el buffer
+                if(buff.length == global.infoGame.size){
+                      ReceiveFile(buff,client);
+                      band=false;
+                }
             }                                  
         });
         client.on('end',function(){
@@ -138,7 +131,7 @@ announceRoom(global.infoGame.roomNames,global.infoGame.tiempo,cantidad_jug,globa
                 'id' : find.id
             };
             console.log('Data disconnect:'+data);
-            sendMulticast(data);
+            sendMulticast(data,false);
             var user = _.find(users,function(users){
                         return typeof(users.sock.localAddress) === 'undefined';
                     });
@@ -158,6 +151,22 @@ announceRoom(global.infoGame.roomNames,global.infoGame.tiempo,cantidad_jug,globa
     server.listen(port,function(){
         console.log('Server listening');
     });
+
+function logDataStream(data){  
+  // log the binary data stream in rows of 8 bits
+  var print = "";
+  for (var i = 0; i < data.length; i++) {
+    print += " " + data[i].toString(16);
+
+    // apply proper format for bits with value < 16, observed as int tuples
+    if (data[i] < 16) { print += "0"; }
+
+    // insert a line break after every 8th bit
+    if ((i + 1) % 8 === 0) {
+      print += '\n';
+    };
+  }
+}
     function handleData( data , sock ){
         switch(data.codigo){
             case 2:
@@ -170,7 +179,7 @@ announceRoom(global.infoGame.roomNames,global.infoGame.tiempo,cantidad_jug,globa
                 fileComes(data,sock);
                 break;
             case 8:
-                envioDeCarta(data,sock);
+                
                 break;
             default:
                 console.log('Codigo erroneo de JSON');
@@ -222,34 +231,45 @@ announceRoom(global.infoGame.roomNames,global.infoGame.tiempo,cantidad_jug,globa
         }
     }
     function fileComes( data, sock){
-        var name= data.nombre;
-        global.infoGame.Filename=name;
-        console.log('nombre:'+name);
+        global.infoGame.Filename=data.nombre;
+        global.infoGame.size = data.size;
+        console.log('nombre:'+data.nombre);
+         band=true;
     }
    function ReceiveFile( data, sock){
-        console.log(dir);
-        var file = data.file;
-        console.log('tamaño:'+file.length);
-        fs.writeFile('./share/'+global.infoGame.Filename,file);
-        ResendFile(global.infoGame.Filename,file);
+        console.log(sock.remoteAddress);
+        console.log('tamaño:'+data.length);
+        fs.writeFile('./share/'+global.infoGame.Filename,data);
+        console.log('Se guardo el archivo:'+global.infoGame.Filename+' recibido por el cliente');
+        ResendFile(global.infoGame.Filename, data, sock.remoteAddress);
+        global.infoGame.size=0;
     }
-   function ResendFile(name,buffer){
-            var data = {
+   function ResendFile(name,buffer, remoteAddress){
+            var msg = {
             'codigo': 6,
-            'nombre':name
+            'nombre':name,
+            'ipcliente':remoteAddress,
+            'size':buffer.length
             };
-            sendMulticast(data);
+            sendMulticast(msg,false);
             function time(){
                 myVar= setTimeout(enviar,2000);
             }
             function enviar(){
-                var dataFile = {
-                'file': buffer
-                };
-                sendMulticast(dataFile);
-                console.log('Servidor reenvío.')
+                for (var i = 0; i < ipclients.length; i++) {
+                    if(ipclients[i].ip!=remoteAddress){
+                        clientTCP = network.clientTCP(port, ipclients[i].ip);
+                        clientTCP.write(buffer);
+                        clientTCP.destroy();
+                        console.log('Servidor reenvío al cliente.'+ipclients.ip);
+                    }
+                }
+                //sendMulticast(buffer,true);
+                
             }
             time();
+            //Se deberia vaciar el Buffer!
+            global.infoGame.Filename='';
    }
     function parseJSON( json ){
         try{
@@ -260,20 +280,6 @@ announceRoom(global.infoGame.roomNames,global.infoGame.tiempo,cantidad_jug,globa
         }
     }
 
-    function comienzoDeRonda(points){
-    jugadoresEnSala = _.size(jugadores);
-    if(band === 0){
-        for (var i = 0; i <=  jugadoresEnSala - 1; i++) {
-             puntaje[i] = {id: jugadores[i].id, puntaje: points};
-        }
-    band = 1;
-    }
-    var data = {
-        'codigo': 5,
-        'puntaje': puntaje
-    };
-    return data;
-    }
 
     function removeElementsByClass(className){
     var elements = document.getElementsByClassName(className);
@@ -292,7 +298,7 @@ $('#crearSala').on('click',function(ev){
     $('#players').hide();
     $('#imagen_oculta').removeClass('hide');
     $('#btn_oculta').removeClass('hide');
-
+    clearInterval(intervalToAnnounce);
     monitor.on('change', function(changes) {
     //console.log(changes);
     });
