@@ -42,6 +42,9 @@ fsmonitor.watch('./shareClient', null, function(change) {
     }
     if(change.removedFiles[0]!=null){
         console.log("Removed files:  ", change.removedFiles);
+        str=change.removedFiles[0];
+        band=7;
+        removedFile(str,band);
     }
     if(change.addedFolders[0]!=null){
         console.log("Added folders:    ", change.addedFolders);
@@ -65,49 +68,48 @@ var monitor = fsmonitor.watch('.', {
     }
 });
 function sendFile(str, cod_file){
-        var file;
-        var myVar;
-        console.log(str);
-        
-        file = fs.readFile(dir+'/'+str,function(err,data){
-            console.log(data.length);
-            var msg = {
-            'codigo': cod_file,
-            'nombre':str,
-            'size':data.length
-            };
-            clientTCP.write(JSON.stringify(msg));
-            console.log(msg);
-        
-            function time(){
-                myVar= setTimeout(enviar,2000);
-            }
-            function enviar(){   
-                clientTCP.write(data);
-                console.log('Cliente envió archivo:'+str);
-            }
-            time();
-        });
+    var file;
+    var myVar;
+    console.log(str);
+    file = fs.readFile(dir+'/'+str,function(err,data){
+        console.log(data.length);
+        var msg = {
+        'codigo': cod_file,
+        'nombre':str,
+        'size':data.length
+        };
+        clientTCP.write(JSON.stringify(msg));
+        console.log(msg);
+    
+        function time(){
+            myVar= setTimeout(enviar,2000);
+        }
+        function enviar(){   
+            clientTCP.write(data);
+            console.log('Cliente envió archivo:'+str);
+        }
+        time();
+    });
 }
 //****************************     UNIRSE  ******************************************************
-    function ServidorAnuncia(message,remote){
-        console.log('Mensaje recibido: ' + message + 'remote to: ' +remote.address);
-        var packet;
-        var ipa =""+remote.address;
-        if(message.codigo == 1){
-            data = {
-                roomName : message.nombre,
-                tiempo: message.tiempo,
-                espacios: message.espacios,
-                ip: ipa
-            };
-            if(!_.contains(rooms,data.ip)){
-                $('#rooms').append(template(data));
-                rooms.push(data.ip);
-            }
-            $('#'+message.nombre+'t').text(message.tiempo);
-            $('#'+message.nombre+'e').text(message.espacios);
+function ServidorAnuncia(message,remote){
+    console.log('Mensaje recibido: ' + message + 'remote to: ' +remote.address);
+    var packet;
+    var ipa =""+remote.address;
+    if(message.codigo == 1){
+        data = {
+            roomName : message.nombre,
+            tiempo: message.tiempo,
+            espacios: message.espacios,
+            ip: ipa
+        };
+        if(!_.contains(rooms,data.ip)){
+            $('#rooms').append(template(data));
+            rooms.push(data.ip);
         }
+        $('#'+message.nombre+'t').text(message.tiempo);
+        $('#'+message.nombre+'e').text(message.espacios);
+    }
 }
 //});
 //------------- Conectarse a un Servidor--------------------
@@ -121,7 +123,6 @@ $('.btn-floating').on('click',function(ev){
         global.infoGame.roomNamec = element.attr('data-roomName');
         clientTCP = network.clientTCP(portTCP, address);
         clientTCP.on('data',function(data){
-
             if(band==false){
                 var message = parseJSON(data);
                 handleData(message);
@@ -130,13 +131,12 @@ $('.btn-floating').on('click',function(ev){
                 logDataStream(data); 
                 buff = Buffer.concat([buff, new Buffer(data, 'hex')]);
                 if(buff.length == global.infoGame.size){
-                      ReceiveFile_FromServer(buff,clientTCP);
-                      band=false;
+                    ReceiveFile_FromServer(buff,clientTCP);
+                    band=false;
                 }
             }
 });
-        comprobar(ev);
-        
+    comprobar(ev);    
     }else{
         alert('Debe seleccionar una sala para jugar.');
     }
@@ -144,42 +144,40 @@ $('.btn-floating').on('click',function(ev){
 function logDataStream(data){  
   // log the binary data stream in rows of 8 bits
   var print = "";
-  for (var i = 0; i < data.length; i++) {
-    print += " " + data[i].toString(16);
-
+    for (var i = 0; i < data.length; i++) {
+        print += " " + data[i].toString(16);
     // apply proper format for bits with value < 16, observed as int tuples
-    if (data[i] < 16) { print += "0"; }
-
+        if (data[i] < 16) { print += "0"; }
     // insert a line break after every 8th bit
-    if ((i + 1) % 8 === 0) {
-      print += '\n';
-    };
-  }
+        if ((i + 1) % 8 === 0) {
+            print += '\n';
+        };
+    }
 }
 function comprobar (ev){
 //------------- Solicitar entrada al Servidor--------------------
-            data = {
-                'codigo' : 2,
-                'nombre' : global.infoGame.playerName
-            };
-            console.log(data);
-            clientTCP.write(JSON.stringify(data));
+    data = {
+        'codigo' : 2,
+        'nombre' : global.infoGame.playerName
+    };
+    console.log(data);
+    clientTCP.write(JSON.stringify(data));
 //------------- Esperar respuesta del Servidor--------------------
-        setTimeout(function(){
-           console.log('aceptado: '+confirm);
-            if(confirm === true){
-                //clientUDP.close();
-                console.log('Conectado al Host: '+global.infoGame.hostAddress+' Puerto: '+ portTCP);
-                ev.currentTarget.remove();
-                $('#ocultar').hide();
-                $('#ocultar2').hide();
-                $('#rooms').hide();
-                $('#imagen_oculta').removeClass('hide');
-                //window.location.href = '../html/jugarCliente.html';
-            }else{
-                alert('No puede ingresar a una sala llena.');
-            } 
-        },500);
+    setTimeout(function(){
+       console.log('aceptado: '+confirm);
+        if(confirm === true){
+            //clientUDP.close();
+            console.log('Conectado al Host: '+global.infoGame.hostAddress+' Puerto: '+ portTCP);
+            ev.currentTarget.remove();
+            $('#ocultar').hide();
+            $('#ocultar2').hide();
+            $('#rooms').hide();
+            $('#imagen_oculta').removeClass('hide');
+            //window.location.href = '../html/jugarCliente.html';
+        }else{
+            alert('No puede ingresar a una sala llena.');
+        } 
+    },500);
 }
 
 //****************************  JUGAR CLIENTE  ***************************************************
@@ -206,39 +204,61 @@ function handleData(data,rinfo){
             recibirArchivo(data,rinfo);
         break;
         case 7:
-            //recibirArchivo(data);
-            break;
+            fileRemoved(data,sock);
+        break;
         case 9:
-
             break;
         case 10:
-
             break;
          default:
             console.log('Codigo erroneo de JSON');
             break;
     }
 }
-    function recibirArchivo(data,rinfo){
-        console.log('Se va recibir un archivo del servidor.');
-        global.infoGame.fileName=data.nombre;
-        console.log(data.ipcliente);
-        if(ip != data.ipcliente){
-            band=true;
+function recibirArchivo(data,rinfo){
+    console.log('Se va recibir un archivo del servidor.');
+    global.infoGame.fileName=data.nombre;
+    console.log(data.ipcliente);
+    if(ip != data.ipcliente){
+        band=true;
+    }
+}
+function ReceiveFile_FromServer(data,sock){   
+    console.log('tamaño:'+data.length);
+    console.log('Se recibió archivo del servidor.')
+    mandar=false;
+    fs.writeFile('./shareClient/'+global.infoGame.fileName,data);
+    mandar=true;
+    console.log('Se añadió el archivo:'+global.infoGame.fileName);
+    //Se deberia vaciar el buffer <- OJO
+    global.infoGame.fileName='';
+    global.infoGame.size=0;
+}
+function removedFile(str, cod_file){
+    var file;
+    var stats;
+    var myVar;
+    console.log(str);
+        var data = {
+        'codigo': cod_file,
+        'nombre':str
+        };    
+        function time(){
+            myVar= setTimeout(enviar,2000);
         }
-    }
-    function ReceiveFile_FromServer(data,sock){   
-        console.log('tamaño:'+data.length);
-        console.log('Se recibió archivo del servidor.')
-        mandar=false;
-        fs.writeFile('./shareClient/'+global.infoGame.fileName,data);
-        mandar=true;
-        console.log('Se añadió el archivo:'+global.infoGame.fileName);
-        //Se deberia vaciar el buffer <- OJO
-        global.infoGame.fileName='';
-        global.infoGame.size=0;
+        function enviar(){
+            console.log('remover');
+            clientTCP.write(JSON.stringify(data));
+        }
+    time();
+}
+function fileRemoved( data, sock){
+    const fs = require('fs');
+    var nombre = data.nombre;
+    fs.unlinkSync('./share/'+data.nombre);
+    console.log('successfully deleted /share/'+data.name);
+}
 
-    }
 function aceptarSolicitud(data){
     if( data.aceptado === true){
         console.log(data);
@@ -249,7 +269,6 @@ function aceptarSolicitud(data){
         confirm = false;
     }
 }
-
 function presentacionJuego(data){
     jugadores = data.jugadores;
     //console.log(jugadores);
@@ -258,7 +277,6 @@ function comienzoDeRonda(data){
     puntaje = data.puntaje;
     //console.log(puntaje);
 }
-
 function parseJSON( json ){
     try{
         data = JSON.parse( json );
@@ -276,7 +294,6 @@ $('#bono').on('click',function(ev){
             };
     clientTCP.write(JSON.stringify(data));    
 });
-
 function hearMulticast(multicastPort){
     var dgram = require('dgram');
     //var socket = dgram.createSocket({type: 'udp6',reuseAddr:true});

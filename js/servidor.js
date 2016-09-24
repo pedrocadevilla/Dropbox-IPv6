@@ -73,11 +73,9 @@ var monitor = fsmonitor.watch('.', {
         return relpath.match(/^\.git$/i) !== null;
     }
 });
-
 //--------------------------------------------------------------------
 announceRoom(global.infoGame.roomNames,global.infoGame.tiempo,cantidad_jug,global.infoGame.udp);
-    function announceRoom(room, time, space, port){
-        
+    function announceRoom(room, time, space, port){        
         intervalToAnnounce = setInterval(function(){
         var message = {
             'codigo': 1,
@@ -117,8 +115,8 @@ announceRoom(global.infoGame.roomNames,global.infoGame.tiempo,cantidad_jug,globa
                 logDataStream(data); // Acumular Buffer
                 buff = Buffer.concat([buff, new Buffer(data, 'hex')]); // Concatenar el buffer
                 if(buff.length == global.infoGame.size){
-                      ReceiveFile(buff,client);
-                      band=false;
+                    ReceiveFile(buff,client);
+                    band=false;
                 }
             }                                  
         });
@@ -150,143 +148,144 @@ announceRoom(global.infoGame.roomNames,global.infoGame.tiempo,cantidad_jug,globa
     });
     server.listen(port,function(){
         console.log('Server listening');
-    });
+});
 
 function logDataStream(data){  
   // log the binary data stream in rows of 8 bits
-  var print = "";
-  for (var i = 0; i < data.length; i++) {
-    print += " " + data[i].toString(16);
-
-    // apply proper format for bits with value < 16, observed as int tuples
-    if (data[i] < 16) { print += "0"; }
-
-    // insert a line break after every 8th bit
-    if ((i + 1) % 8 === 0) {
-      print += '\n';
-    };
-  }
+    var print = "";
+    for (var i = 0; i < data.length; i++) {
+        print += " " + data[i].toString(16);
+        // apply proper format for bits with value < 16, observed as int tuples
+        if (data[i] < 16) { print += "0"; }
+        // insert a line break after every 8th bit
+        if ((i + 1) % 8 === 0) {
+        print += '\n';
+        };
+    } 
 }
-    function handleData( data , sock ){
-        switch(data.codigo){
-            case 2:
-                responseConnection(data, sock);
-                break;
-            case 4:
-                fileComes(data,sock);
-                break;
-            case 5:
-                fileComes(data,sock);
-                break;
-            case 8:
-                
-                break;
-            default:
-                console.log('Codigo erroneo de JSON');
-                break;
-        }
+function handleData( data , sock ){
+    switch(data.codigo){
+        case 2:
+            responseConnection(data, sock);
+            break;
+        case 4:
+            fileComes(data,sock);
+            break;
+        case 5:
+            fileComes(data,sock);
+            break;
+        case 7:
+            fileRemoved(data,sock);
+        break;
+        case 8:
+            
+            break;
+        default:
+            console.log('Codigo erroneo de JSON');
+            break;
     }
-    function responseConnection( json, sock ){        
-        if(global.infoGame.espacios <= 0){          
+}
+function responseConnection( json, sock ){        
+    if(global.infoGame.espacios <= 0){          
+        var response ={
+            'codigo' : 3,
+            'aceptado' : false,
+            'direccion': null,
+            'id' : null
+        };
+    }else{
+         idcliente = (cant - cantidad_jug)+1;
+          console.log('idcliente: '+idcliente);
             var response ={
                 'codigo' : 3,
-                'aceptado' : false,
-                'direccion': null,
-                'id' : null
+                'aceptado' : true,
+                'direccion': ip,
+                'id' : idcliente
             };
-        }else{
-             idcliente = (cant - cantidad_jug)+1;
-              console.log('idcliente: '+idcliente);
-                var response ={
-                    'codigo' : 3,
-                    'aceptado' : true,
-                    'direccion': ip,
-                    'id' : idcliente
-                };
-            cantidad_jug =  cantidad_jug - 1;
-            console.log('espacios: '+cantidad_jug);
-            global.infoGame.espacios = cantidad_jug;
-            
-            sock.write(JSON.stringify(response));
-            ipcliente = sock.remoteAddress;
-            ipcliente = ipcliente.replace("::ffff:","");
-
-                data = {
-                playerName : json.nombre,
-                ip : ipcliente,
-                };
-                
-            pos = idcliente - 1;
-            jugadores[pos]= {nombre: json.nombre, id: idcliente};
-            ipclientes[pos] ={id: idcliente, ip: ipcliente}; 
-            console.log(ipcliente);
-            
-            clearInterval(intervalToAnnounce);
-            announceRoom(global.infoGame.roomNames,global.infoGame.tiempo,cantidad_jug,global.infoGame.udp);
-            $('#players').append(template(data));
-            users.push({
-                ip: ipcliente,
-                playerName: json.nombre
-            });
-        }
+        cantidad_jug =  cantidad_jug - 1;
+        console.log('espacios: '+cantidad_jug);
+        global.infoGame.espacios = cantidad_jug;
+        sock.write(JSON.stringify(response));
+        ipcliente = sock.remoteAddress;
+        ipcliente = ipcliente.replace("::ffff:","");
+            data = {
+            playerName : json.nombre,
+            ip : ipcliente,
+            };           
+        pos = idcliente - 1;
+        jugadores[pos]= {nombre: json.nombre, id: idcliente};
+        ipclientes[pos] ={id: idcliente, ip: ipcliente}; 
+        console.log(ipcliente);
+        
+        clearInterval(intervalToAnnounce);
+        announceRoom(global.infoGame.roomNames,global.infoGame.tiempo,cantidad_jug,global.infoGame.udp);
+        $('#players').append(template(data));
+        users.push({
+            ip: ipcliente,
+            playerName: json.nombre
+        });
     }
-    function fileComes( data, sock){
-        global.infoGame.Filename=data.nombre;
-        global.infoGame.size = data.size;
-        console.log('nombre:'+data.nombre);
-         band=true;
+}
+function fileComes( data, sock){
+    global.infoGame.Filename=data.nombre;
+    global.infoGame.size = data.size;
+    console.log('nombre:'+data.nombre);
+    band=true;
+}
+function ReceiveFile( data, sock){
+    console.log(sock.remoteAddress);
+    console.log('tamaño:'+data.length);
+    fs.writeFile('./share/'+global.infoGame.Filename,data);
+    console.log('Se guardo el archivo:'+global.infoGame.Filename+' recibido por el cliente');
+    ResendFile(global.infoGame.Filename, data, sock.remoteAddress);
+    global.infoGame.size=0;
+}
+function ResendFile(name,buffer, remoteAddress){
+    var msg = {
+        'codigo': 6,
+        'nombre':name,
+        'ipcliente':remoteAddress,
+        'size':buffer.length
+    };
+    sendMulticast(msg,false);
+    function time(){
+        myVar= setTimeout(enviar,2000);
     }
-   function ReceiveFile( data, sock){
-        console.log(sock.remoteAddress);
-        console.log('tamaño:'+data.length);
-        fs.writeFile('./share/'+global.infoGame.Filename,data);
-        console.log('Se guardo el archivo:'+global.infoGame.Filename+' recibido por el cliente');
-        ResendFile(global.infoGame.Filename, data, sock.remoteAddress);
-        global.infoGame.size=0;
-    }
-   function ResendFile(name,buffer, remoteAddress){
-            var msg = {
-            'codigo': 6,
-            'nombre':name,
-            'ipcliente':remoteAddress,
-            'size':buffer.length
-            };
-            sendMulticast(msg,false);
-            function time(){
-                myVar= setTimeout(enviar,2000);
+    function enviar(){
+        for (var i = 0; i < ipclients.length; i++) {
+            if(ipclients[i].ip!=remoteAddress){
+                clientTCP = network.clientTCP(port, ipclients[i].ip);
+                clientTCP.write(buffer);
+                clientTCP.destroy();
+                console.log('Servidor reenvío al cliente.'+ipclients.ip);
             }
-            function enviar(){
-                for (var i = 0; i < ipclients.length; i++) {
-                    if(ipclients[i].ip!=remoteAddress){
-                        clientTCP = network.clientTCP(port, ipclients[i].ip);
-                        clientTCP.write(buffer);
-                        clientTCP.destroy();
-                        console.log('Servidor reenvío al cliente.'+ipclients.ip);
-                    }
-                }
-                //sendMulticast(buffer,true);
-                
-            }
-            time();
-            //Se deberia vaciar el Buffer!
-            global.infoGame.Filename='';
-   }
-    function parseJSON( json ){
-        try{
-            var data = JSON.parse( json );
-            return data;
-        }catch(err){
-            console.log('Error al parsear el JSON  -' + err);
         }
+        //sendMulticast(buffer,true);s
     }
-
-
-    function removeElementsByClass(className){
+    time();
+    //Se deberia vaciar el Buffer!
+    global.infoGame.Filename='';
+}
+function fileRemoved( data, sock){
+    const fs = require('fs');
+    var nombre = data.nombre;
+    fs.unlinkSync('./share/'+data.nombre);
+    console.log('successfully deleted /share/'+data.name);
+}
+function parseJSON( json ){
+    try{
+        var data = JSON.parse( json );
+        return data;
+    }catch(err){
+        console.log('Error al parsear el JSON  -' + err);
+    }
+}
+function removeElementsByClass(className){
     var elements = document.getElementsByClassName(className);
     while(elements.length > 0){
         elements[0].parentNode.removeChild(elements[0]);
     }
-    }
+}
 $('#crearSala').on('click',function(ev){
     ev.preventDefault();
     console.log('Empezar juego');
@@ -311,7 +310,6 @@ $('#comenzar').on('click',function(ev){
     removeElementsByClass("cardd");
 
 });
-
 }());
 function removePlayer(data){
     $('#'+data.playerName+'-'+ data.ip).remove();
